@@ -1,4 +1,5 @@
 import requests
+import argparse
 
 class GroupAnalyzer():
 
@@ -33,11 +34,9 @@ class GroupAnalyzer():
 		return json['response']['messages']
 
 	def _analyze(self, group_number):
-		for user in self.groups[group_number]['members']:
-			user = {'name': user['nickname'], 'id': user['user_id'], 'message-count': 0, 
-				'word-count': 0, 'likes-received': 0, 'likes-given': 0}
-			self.users_data.update({user['id']: user})
 		has_messages = True
+
+		#20 Messages per request
 		while(has_messages):
 			messages = self._get_messages('')
 			for message in messages:
@@ -56,14 +55,22 @@ class GroupAnalyzer():
 		self.groups = self._get_groups();
 		try:
 			group_number = int(input("Enter the number of the group you would like to analyze:"))
+			for user in self.groups[group_number]['members']:
+				user = {'name': user['nickname'], 'id': user['user_id'], 'message-count': 0, 
+					'word-count': 0, 'likes-received': 0, 'likes-given': 0}
+				self.users_data.update({user['id']: user})
 			self.group_id = self._get_group_id_for_input(group_number)
 			self._analyze(group_number)
 		except ValueError:
 			print("Not a number")
 
 def main():
-    ga = GroupAnalyzer("dcWvMk4nP4YnBR1p12ImCK4Qn8vhrVzM8xUCnCwt")
-    ga.analyze()
+	parser = argparse.ArgumentParser(description='''GroupMe Analyzer''')
+	parser.add_argument('token', help='GroupMe API Access token: https://dev.groupme.com/')
+	args = parser.parse_args()
+
+	ga = GroupAnalyzer(args.token)
+	ga.analyze()
 
 
 if __name__ == '__main__':
